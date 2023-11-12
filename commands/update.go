@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/RedVentures/koolseal/entity"
+	"github.com/ja1code/koolseal/entity"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 )

@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/RedVentures/koolseal/commands"
+	"github.com/ja1code/koolseal/commands"
 	"github.com/urfave/cli/v2"
 )
 

@@ -1,4 +1,4 @@
-module github.com/RedVentures/koolseal
+module github.com/ja1code/koolseal
 
 go 1.19
 
