@@ -1,15 +1,13 @@
 package commands
 
 import (
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/ja1code/koolseal/entity"
+	"github.com/ja1code/koolseal/util"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -68,7 +66,7 @@ func updateAction() func(cCtx *cli.Context) error {
 			return nil
 		}
 
-		secretsRaw, err := callCmd("kubectl", "get", "secret", secretName[1], "-o", "json", "-n", secretName[0])
+		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName[1], "-o", "json", "-n", secretName[0])
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil
@@ -82,7 +80,7 @@ func updateAction() func(cCtx *cli.Context) error {
 		}
 
 		for key, secret := range secrets.Data {
-			secrets.Data[key] = decodeB64(secret)
+			secrets.Data[key] = util.DecodeB64(secret)
 		}
 
 		if cCtx.String("key") != "" {
@@ -122,7 +120,7 @@ func updateAction() func(cCtx *cli.Context) error {
 			return nil
 		}
 
-		encryptedSecrets, err := callCmd("kubeseal", "--cert", cCtx.String("cert"), "-o", "yaml", "-f", "temp.yaml")
+		encryptedSecrets, err := util.CallCmd("kubeseal", "--cert", cCtx.String("cert"), "-o", "yaml", "-f", "temp.yaml")
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil
@@ -141,19 +139,7 @@ func updateAction() func(cCtx *cli.Context) error {
 		}
 
 		if cCtx.Bool("publish") {
-			_, err = callCmd("git", "add", cCtx.Args().Get(0))
-			if err != nil {
-				fmt.Println(err.Error())
-				return nil
-			}
-
-			_, err = callCmd("git", "commit", "-m", fmt.Sprintf("\"KoolSeal: updating %s secrets\"", strings.Join(secretName, "/")))
-			if err != nil {
-				fmt.Println(err.Error())
-				return nil
-			}
-
-			_, err = callCmd("git", "push")
+			err = util.PublishChanges(cCtx.Args().First(), fmt.Sprintf("\"KoolSeal: updating %s secrets\"", strings.Join(secretName, "/")))
 			if err != nil {
 				fmt.Println(err.Error())
 				return nil
@@ -183,30 +169,4 @@ func validateCall(cCtx *cli.Context) error {
 	}
 
 	return nil
-}
-
-func callCmd(command string, args ...string) (string, error) {
-	cmd := exec.Command(command, args...)
-
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	var outerr bytes.Buffer
-	cmd.Stderr = &outerr
-
-	err := cmd.Run()
-	if err != nil {
-		return "", err
-	}
-
-	if outerr.Len() != 0 {
-		return "", fmt.Errorf(outerr.String())
-	}
-
-	return out.String(), nil
-}
-
-func decodeB64(s string) string {
-	o, _ := base64.StdEncoding.DecodeString(s)
-	return string(o)
 }
