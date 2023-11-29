@@ -24,12 +24,7 @@ func CreateCommand() *cli.Command {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "The name of the secrets to create",
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "namespace",
+				Name:     "ns",
 				Usage:    "New secrets namespace",
 				Required: true,
 			},
@@ -57,7 +52,7 @@ func CreateCommand() *cli.Command {
 
 func createAction() func(cCtx *cli.Context) error {
 	return func(cCtx *cli.Context) error {
-		secretName := strings.Split(cCtx.String("secrets"), "/")
+		secretName := strings.Split(cCtx.String("ns"), "/")
 		if len(secretName) != 2 {
 			fmt.Println("the secret flag should be <namespace>/<name>")
 			return nil
