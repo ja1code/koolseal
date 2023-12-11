@@ -28,12 +28,6 @@ func CreateCommand() *cli.Command {
 				Usage:    "New secrets namespace",
 				Required: true,
 			},
-			&cli.StringFlag{
-				Name:        "destination",
-				Usage:       "The destination dir for the secrets file",
-				DefaultText: "./",
-				Required:    true,
-			},
 			&cli.BoolFlag{
 				Name:  "publish",
 				Usage: "commit new secrets",
