@@ -4,7 +4,7 @@ A wrapper CLI to ease kubeseal secrets management on Kubernetes
 
 ## Download
 ```sh
-$ go get github.com/ja1code/koolseal@latest
+go install github.com/ja1code/koolseal@latest
 ```
 
 ## Commands
