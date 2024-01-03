@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/ja1code/koolseal/entity"
 	"github.com/ja1code/koolseal/util"
@@ -20,29 +19,42 @@ func UpdateCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "cert",
+				Aliases:  []string{"c"},
 				Usage:    "The certificate used to update secrets",
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "secrets",
-				Usage:    "The namespace/name of the secrets to update",
+				Name:        "namespace",
+				Aliases:     []string{"ns"},
+				Usage:       "The namespace of the secrets to update",
+				Required:    true,
+				DefaultText: "default",
+			},
+			&cli.StringFlag{
+				Name:     "name",
+				Aliases:  []string{"n"},
+				Usage:    "The name of the secrets to update",
 				Required: true,
 			},
 			&cli.BoolFlag{
-				Name:  "publish",
-				Usage: "commit updates",
+				Name:    "publish",
+				Aliases: []string{"p"},
+				Usage:   "commit updates",
 			},
 			&cli.StringFlag{
-				Name:  "file",
-				Usage: "file with new values",
+				Name:    "file",
+				Aliases: []string{"f"},
+				Usage:   "file with new values",
 			},
 			&cli.StringFlag{
-				Name:  "key",
-				Usage: "new secret key",
+				Name:    "key",
+				Aliases: []string{"k"},
+				Usage:   "new secret key",
 			},
 			&cli.StringFlag{
-				Name:  "value",
-				Usage: "new secret value",
+				Name:    "value",
+				Aliases: []string{"v"},
+				Usage:   "new secret value",
 			},
 		},
 		Action: updateAction(),
@@ -60,22 +72,19 @@ func updateAction() func(cCtx *cli.Context) error {
 			return nil
 		}
 
-		secretName := strings.Split(cCtx.String("secrets"), "/")
-		if len(secretName) != 2 {
-			fmt.Println("the secret flag should be <namespace>/<name>")
-			return nil
-		}
+		secretName := cCtx.String("name")
+		secretNamespace := cCtx.String("namespace")
 
-		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName[1], "-o", "json", "-n", secretName[0])
+		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName, "-o", "json", "-n", secretNamespace)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error while fetching current secrets from Kubernetes", err.Error())
 			return nil
 		}
 
 		var secrets entity.SecretsDeclaration
 		err = json.Unmarshal([]byte(secretsRaw), &secrets)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error while parsing secrets", err.Error())
 			return nil
 		}
 
@@ -92,14 +101,14 @@ func updateAction() func(cCtx *cli.Context) error {
 		if cCtx.String("file") != "" {
 			valueMapRaw, err := os.ReadFile(cCtx.String("file"))
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("Error while reading new values file", err.Error())
 				return nil
 			}
 
 			var valueMap map[string]string
 			err = json.Unmarshal(valueMapRaw, &valueMap)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("Error while parsing new values", err.Error())
 				return nil
 			}
 
@@ -110,38 +119,38 @@ func updateAction() func(cCtx *cli.Context) error {
 
 		eYaml, err := yaml.Marshal(&secrets)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Internal YAML error", err.Error())
 			return nil
 		}
 
 		err = os.WriteFile("temp.yaml", eYaml, 0777)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error while writing temporary files", err.Error())
 			return nil
 		}
 
 		encryptedSecrets, err := util.CallCmd("kubeseal", "--cert", cCtx.String("cert"), "-o", "yaml", "-f", "temp.yaml")
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error when calling kubeseal", err.Error())
 			return nil
 		}
 
 		err = os.Remove("temp.yaml")
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error when deleting temporary files", err.Error())
 			return nil
 		}
 
 		err = os.WriteFile(cCtx.Args().Get(0), []byte(encryptedSecrets), 0755)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error when writing updated secrets files", err.Error())
 			return nil
 		}
 
 		if cCtx.Bool("publish") {
-			err = util.PublishChanges(cCtx.Args().First(), fmt.Sprintf("\"KoolSeal: updating %s secrets\"", strings.Join(secretName, "/")))
+			err = util.PublishChanges(cCtx.Args().First(), fmt.Sprintf("\"KoolSeal: updating %s secrets\"", fmt.Sprintf("%s/%s", secretNamespace, secretName)))
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("Error when publishing to github", err.Error())
 				return nil
 			}
 		}

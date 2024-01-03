@@ -31,16 +31,17 @@ Create a `.json` dictionary with the desired values
 
 Call koolseal's `create` to generate a sealed secrets file
 ```shell
-$ koolseal create --cert cert.crt --ns default/main-api  --file ~/values.json ./secrets/main-api.secrets.sealed.yaml
+$ koolseal create -c cert.crt -ns default -n main-api -f ~/values.json ./secrets/main-api.secrets.sealed.yaml
 ```
 
-- `--cert` specifies the certificate to use
-- `--ns` the namespace and name to be used on the new secret, it should be in the format `<namespace>/<name>`
-- `--file` specifies the `.json` dictionary file location
+- `-c` specifies the certificate to use
+- `-ns` the namespace to be used on the new secret
+- `-n` the name to be used on the new secret
+- `-f` specifies the `.json` dictionary file location
 
 The last argument is the destination where the sealed secrets file will be created.
 
-### Update secrets
+### Update/Extend secrets
 
 Create a `.json` dictionary with the desired updates and additions values
 ```json
@@ -54,13 +55,14 @@ Create a `.json` dictionary with the desired updates and additions values
 
 Call koolseal's `update` to generate a sealed secrets file
 ```shell
-$ koolseal update --secrets default/main-api --file values.json --cert cert.crt --publish ./secrets/main-api.secret.sealed.yaml
+$ koolseal update -ns default -n main-api -f values.json -c cert.crt -p ./secrets/main-api.secret.sealed.yaml
 ```
 
-- `--cert` specifies the certificate to use
-- `--secrets` the namespace and name of the secrets to be updated, it should be in the format `<namespace>/<name>`
-- `--file` specifies the `.json` dictionary file location
-- `--publish` when in a git repository, you can automatically commit abd push the updates
+- `-c` specifies the certificate to use
+- `-n` the name of the secrets to be updated
+- `-ns` the namespace of the secrets to be updated
+- `-f` specifies the `.json` dictionary file location
+- `-p` when in a git repository, you can automatically commit abd push the updates
 
 The last argument is the destination where the updated sealed secrets file will be created, ideally you should inform the secret's current sealed secret file location, that way, koolseal will overwrite the previous secrets file with the update values
 
@@ -69,11 +71,12 @@ The last argument is the destination where the updated sealed secrets file will 
 ### Extract
 
 ```shell
-$ koolseal e --ns default/main-api --file main-api.json
+$ koolseal e -ns default -n main-api -f main-api.json
 ```
 
-- `--ns` the namespace and name to be extracted, it should be in the format `<namespace>/<name>`
-- `--file` the file that will be created with the current secrets
+- `-ns` the namespace to be extracted
+- `-n` the name and name to be extracted
+- `-f` the file that will be created with the current secrets
 
 This will generate a `.json` file in the following format:
 ```json

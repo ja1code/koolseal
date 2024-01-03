@@ -18,13 +18,16 @@ func ExtractCommand() *cli.Command {
 		Usage:   "extract a secrets file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "ns",
-				Usage:    "New secrets namespace",
-				Required: true,
+				Name:        "namespace",
+				Aliases:     []string{"ns"},
+				Usage:       "secrets namespace",
+				Required:    true,
+				DefaultText: "default",
 			},
 			&cli.StringFlag{
-				Name:     "file",
-				Usage:    "file with new values",
+				Name:     "name",
+				Aliases:  []string{"n"},
+				Usage:    "secrets name",
 				Required: true,
 			},
 		},
@@ -65,10 +68,14 @@ func extractAction() func(cCtx *cli.Context) error {
 			return nil
 		}
 
-		err = os.WriteFile(cCtx.String("file"), jsonBytes, 0777)
-		if err != nil {
-			fmt.Println(err.Error())
-			return nil
+		if cCtx.Args().First() != "" {
+			err = os.WriteFile(cCtx.Args().First(), jsonBytes, 0777)
+			if err != nil {
+				fmt.Println(err.Error())
+				return nil
+			}
+		} else {
+			fmt.Println(string(jsonBytes))
 		}
 
 		return nil
