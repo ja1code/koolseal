@@ -59,7 +59,7 @@ func extractAction() func(cCtx *cli.Context) error {
 			secrets.Data[key] = util.DecodeB64(secret)
 		}
 
-		jsonBytes, err := json.Marshal(secrets)
+		jsonBytes, err := json.MarshalIndent(secrets, "", "    ")
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil
