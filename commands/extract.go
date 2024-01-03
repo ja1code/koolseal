@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/ja1code/koolseal/entity"
 	"github.com/ja1code/koolseal/util"
@@ -39,13 +38,11 @@ func ExtractCommand() *cli.Command {
 
 func extractAction() func(cCtx *cli.Context) error {
 	return func(cCtx *cli.Context) error {
-		secretName := strings.Split(cCtx.String("ns"), "/")
-		if len(secretName) != 2 {
-			fmt.Println("the secret flag should be <namespace>/<name>")
-			return nil
-		}
+		secretName := cCtx.String("name")
 
-		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName[1], "-o", "json", "-n", secretName[0])
+		secretNamespace := cCtx.String("namespace")
+
+		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName, "-o", "json", "-n", secretNamespace)
 		if err != nil {
 			fmt.Println(err.Error())
 			return nil
