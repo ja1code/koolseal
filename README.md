@@ -71,12 +71,13 @@ The last argument is the destination where the updated sealed secrets file will 
 ### Extract
 
 ```shell
-$ koolseal e -ns default -n main-api -f main-api.json
+$ koolseal e -ns default -n main-api main-api.json
 ```
 
 - `-ns` the namespace to be extracted
 - `-n` the name and name to be extracted
-- `-f` the file that will be created with the current secrets
+
+The first and only argument should be a file name to be created with the extracted values, if empty the secrets will be printed on the terminal
 
 This will generate a `.json` file in the following format:
 ```json

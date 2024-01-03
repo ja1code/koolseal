@@ -44,14 +44,14 @@ func extractAction() func(cCtx *cli.Context) error {
 
 		secretsRaw, err := util.CallCmd("kubectl", "get", "secret", secretName, "-o", "json", "-n", secretNamespace)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error while getting secrets from k8s", err.Error())
 			return nil
 		}
 
 		var secrets entity.SecretsDeclaration
 		err = json.Unmarshal([]byte(secretsRaw), &secrets)
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error parsing json", err.Error())
 			return nil
 		}
 
@@ -61,14 +61,14 @@ func extractAction() func(cCtx *cli.Context) error {
 
 		jsonBytes, err := json.MarshalIndent(secrets, "", "    ")
 		if err != nil {
-			fmt.Println(err.Error())
+			fmt.Println("Error while parsing json", err.Error())
 			return nil
 		}
 
 		if cCtx.Args().First() != "" {
 			err = os.WriteFile(cCtx.Args().First(), jsonBytes, 0777)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println("Error while writing output file", err.Error())
 				return nil
 			}
 		} else {
