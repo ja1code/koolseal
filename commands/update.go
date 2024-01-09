@@ -164,11 +164,6 @@ func validateCall(cCtx *cli.Context) error {
 		return fmt.Errorf("the cert flag is required")
 	}
 
-	if cCtx.String("secrets") == "" {
-		return fmt.Errorf("the secrets flag is required")
-
-	}
-
 	if cCtx.String("file") == "" && cCtx.String("key") == "" {
 		return fmt.Errorf("a new secret key or a file with multiple needs to be provided")
 	}
